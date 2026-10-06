@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Huishouden</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Huishouden">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F4F2ED" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151614" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --bg:#F4F2ED; --card:#FFFFFF; --ink:#262624; --ink2:#6E6C66; --ink3:#A3A19A; --line:#E6E3DB;
+  --o:#7A9175; --s:#6A8595; --w:#AE8D5C; --b:#5C7B4D; --warn:#B47A33;
+  --o-soft:#E8EDE5; --s-soft:#E5EBEF; --w-soft:#F2EBE0; --b-soft:#E4EBE0; --warn-soft:#F6EBDA;
+  --mono: ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
+  --r:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#151614; --card:#1F201E; --ink:#ECEAE4; --ink2:#A3A19A; --ink3:#6F6E69; --line:#2E2F2C;
+    --o:#97AD91; --s:#8AA3B2; --w:#CDAE7C; --b:#86A676; --warn:#D9A15A;
+    --o-soft:#283026; --s-soft:#242C31; --w-soft:#322B21; --b-soft:#26301F; --warn-soft:#372C1C;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  -webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+#app{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 16px 28px}
+
+/* header */
+.top{display:flex;align-items:center;gap:8px;margin:4px 0 18px}
+.top .nav{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink2);flex:none}
+.top .nav:active{background:var(--line)}
+.top .nav svg{width:20px;height:20px}
+.top .head{flex:1;min-width:0;text-align:center}
+.top .kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600;height:16px}
+.top h1{font-size:28px;line-height:1.15;margin:2px 0 0;font-weight:650;letter-spacing:-.02em}
+.top .sub{font-size:14px;color:var(--ink2);margin-top:2px}
+.todaybtn{display:block;margin:-8px auto 16px;font-size:13px;font-weight:600;color:var(--o);
+  background:var(--o-soft);padding:6px 14px;border-radius:99px}
+
+/* summary */
+.summary{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:14px;border:1px solid var(--line)}
+.prog{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--o);border-radius:99px;transition:width .35s ease}
+.prog span{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:14px}
+.meter{border-radius:12px;padding:9px 11px;background:var(--o-soft)}
+.meter.s{background:var(--s-soft)} .meter.b{background:var(--b-soft)}
+.meter .lbl{display:block;font-size:12px;color:var(--ink2)}
+.meter .val{font-family:var(--mono);font-size:16px;font-weight:600;letter-spacing:-.02em}
+.meter .val em{font-style:normal;font-weight:400;font-size:12px;color:var(--ink2)}
+.meter.over .val{color:var(--warn)}
+
+/* cards */
+.card{background:var(--card);border-radius:var(--r);margin-bottom:14px;border:1px solid var(--line);overflow:hidden}
+.card h2{display:flex;align-items:center;gap:8px;margin:0;padding:14px 16px 6px;font-size:13px;font-weight:650;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.card h2 .dot{width:8px;height:8px;border-radius:50%;background:var(--o)}
+.cat-s h2 .dot{background:var(--s)} .cat-w h2 .dot{background:var(--w)} .cat-b h2 .dot{background:var(--b)}
+.card h2 .mins{margin-left:auto;font-family:var(--mono);font-weight:500;letter-spacing:0;text-transform:none;font-size:13px}
+.card h2 .mins.over{color:var(--warn)}
+.washero{padding:2px 16px 4px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.washero b{font-size:20px;font-weight:650;letter-spacing:-.01em}
+.washero span{font-family:var(--mono);font-size:13px;color:var(--w);background:var(--w-soft);padding:2px 8px;border-radius:99px}
+.hint{font-size:12.5px;color:var(--ink3);padding:0 16px 12px}
+
+ul.tasks{list-style:none;margin:0;padding:4px 0 6px}
+.task{display:grid;grid-template-columns:44px 1fr auto;align-items:start;padding:8px 16px 8px 8px;position:relative}
+.task + .task::before{content:"";position:absolute;left:52px;right:16px;top:0;border-top:1px solid var(--line)}
+.check{width:44px;height:44px;display:grid;place-items:center;margin-top:-8px}
+.check .c{width:24px;height:24px;border-radius:50%;border:2px solid var(--ink3);display:grid;place-items:center;transition:all .18s ease}
+.check svg{width:14px;height:14px;opacity:0;transform:scale(.6);transition:all .18s ease;color:#fff}
+.cat-o .done .check .c{background:var(--o);border-color:var(--o)}
+.cat-s .done .check .c{background:var(--s);border-color:var(--s)}
+.cat-w .done .check .c{background:var(--w);border-color:var(--w)}
+.cat-b .done .check .c{background:var(--b);border-color:var(--b)}
+.done .check svg{opacity:1;transform:scale(1)}
+.body{min-width:0;cursor:pointer;padding-top:3px}
+.title{font-size:15.5px;line-height:1.3}
+.meta{font-size:12.5px;color:var(--ink2);margin-top:2px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.badge{font-size:11px;font-weight:650;letter-spacing:.02em;padding:1px 7px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+.badge.imp{background:transparent;color:var(--ink3);padding:0;font-weight:500}
+.min{font-family:var(--mono);font-size:13px;color:var(--ink2);padding-top:5px;padding-left:8px;font-variant-numeric:tabular-nums}
+.done .title{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--ink3)}
+.skip .title,.moved .title{color:var(--ink3)}
+.skip .check .c,.moved .check .c{border-style:dashed}
+.more{display:none;grid-column:2 / 4;padding:8px 0 4px}
+.open .more{display:block}
+.tip{font-size:13.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45}
+.facts{font-size:12.5px;color:var(--ink3);margin:0 0 10px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{font-size:13.5px;font-weight:600;padding:8px 13px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
+.acts button:active{background:var(--line)}
+
+/* week */
+.day{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:13px 16px;margin-bottom:10px}
+.day.today{border-color:var(--o);box-shadow:0 0 0 1px var(--o) inset}
+.day .row{display:flex;align-items:baseline;gap:8px}
+.day .dn{font-weight:650;font-size:16px}
+.day .dd{color:var(--ink2);font-size:14px}
+.day .ratio{margin-left:auto;font-family:var(--mono);font-size:12.5px;color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px}
+.chip{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--o-soft);font-variant-numeric:tabular-nums}
+.chip.s{background:var(--s-soft)} .chip.w{background:var(--w-soft)} .chip.b{background:var(--b-soft)}
+.dl{list-style:none;margin:0;padding:0;font-size:13.5px;color:var(--ink2)}
+.dl li{display:flex;gap:8px;align-items:baseline;padding:2px 0}
+.dl li i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--o);transform:translateY(-2px)}
+.dl li.s i{background:var(--s)} .dl li.b i{background:var(--b)}
+.dl li.x{color:var(--ink3);text-decoration:line-through}
+
+/* schema */
+.srow{display:grid;grid-template-columns:14px 1fr auto;gap:2px 8px;padding:9px 16px;align-items:baseline}
+.srow + .srow{border-top:1px solid var(--line)}
+.srow i{width:7px;height:7px;border-radius:50%;background:var(--o);transform:translateY(-1px)}
+.srow.s i{background:var(--s)} .srow.b i{background:var(--b)} .srow.w i{background:var(--w)}
+.srow .t{font-size:14.5px;line-height:1.3}
+.srow .m{font-family:var(--mono);font-size:12.5px;color:var(--ink2)}
+.srow .f{grid-column:2 / 4;font-size:12.5px;color:var(--ink2)}
+.intro{padding:4px 16px 14px;font-size:14px;color:var(--ink2);line-height:1.5}
+.intro p{margin:0 0 8px}
+.wipe{margin:4px 16px 16px;font-size:13.5px;font-weight:600;color:var(--warn);padding:8px 13px;border-radius:10px;border:1px solid var(--line)}
+
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1px solid var(--line);
+  display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:5}
+.tabs button{flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;
+  font-size:11px;font-weight:600;color:var(--ink3)}
+.tabs button svg{width:24px;height:24px}
+.tabs button.on{color:var(--ink)}
+.fade{animation:fade .22s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="app"><div id="view"></div></div>
+<nav class="tabs" id="tabs">
+  <button data-tab="dag" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.3l2.6 2.6 4.9-5.4"/></svg>Vandaag</button>
+  <button data-tab="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>Week</button>
+  <button data-tab="schema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.8" cy="7" r=".9" fill="currentColor"/><circle cx="4.8" cy="12" r=".9" fill="currentColor"/><circle cx="4.8" cy="17" r=".9" fill="currentColor"/></svg>Schema</button>
+</nav>
+<script>
+(function(){
+'use strict';
+var DATA = {"tasks":[{"id":"was_vouwen","t":"Was uit de droger, vouwen en opbergen","r":"Bijkeuken","c":"o","m":10,"f":0,"tip":"Direct vouwen als de droger klaar is scheelt strijken en zoeken."},{"id":"reset_keuken","t":"Reset keuken: vaatwasser uitruimen, aanrecht en eettafel leeg","r":"Woonkeuken","c":"o","m":5,"f":0},{"id":"reset_woon","t":"Reset woonkamer en hal: spullen terug, kussens en plaids recht, vloer vrij voor de robot","r":"Woonkamer","c":"o","m":5,"f":0,"tip":"Een lege vloer = de robotstofzuiger kan zijn werk doen."},{"id":"keuken_dag","t":"Aanrecht, kookplaat en eettafel afnemen","r":"Woonkeuken","c":"s","m":5,"f":0},{"id":"katten_dag","t":"Kattenbakken scheppen, voer- en waterbakjes verversen","r":"Katten","c":"s","m":5,"f":0},{"id":"o_kantoor","t":"Bureau leeg, post en papieren verwerken","r":"Kantoor","c":"o","m":10,"f":1,"d":2,"o":0},{"id":"o_sk2","t":"Spullen terug op hun plek, kleding in de kast","r":"Slaapkamer 2","c":"o","m":10,"f":1,"d":4,"o":0},{"id":"o_ontspul","t":"Ontspullen","r":"Ontspullen","c":"o","m":10,"f":1,"tip":"Eén la of kast. Drie stapels: houden, weg (geven/verkopen), weggooien. Zet de weg-stapel meteen bij de deur of in de auto.","d":1,"o":0},{"id":"o_hal","t":"Jassen, schoenen en tassen op orde","r":"Hal & bijkeuken","c":"o","m":5,"f":2,"d":6,"o":0},{"id":"o_sk1","t":"Kleding weg, nachtkastjes leeg","r":"Slaapkamer 1","c":"o","m":5,"f":1,"d":0,"o":0},{"id":"o_koelkast","t":"Koelkast nalopen: restjes en verlopen producten weg","r":"Woonkeuken","c":"o","m":5,"f":2,"tip":"Handig vlak voor de boodschappen.","d":0,"o":1},{"id":"o_sk3","t":"Opruimen en luchten","r":"Slaapkamer 3","c":"o","m":5,"f":2,"d":3,"o":1},{"id":"o_overloop","t":"Overloop, trap en CV-ruimte vrij","r":"Overloop & trap","c":"o","m":5,"f":2,"d":0,"o":0},{"id":"o_woonkasten","t":"Tv-meubel en kasten: opladers, papier en losse spullen","r":"Woonkamer","c":"o","m":5,"f":2,"d":6,"o":1},{"id":"o_garage","t":"Werkbank vrij, gereedschap terug op zijn plek","r":"Garage","c":"o","m":10,"f":4,"d":3,"o":2},{"id":"o_veranda","t":"Veranda en terras: kussens, speelgoed en potten op orde","r":"Tuin","c":"o","m":5,"f":4,"mo":[4,5,6,7,8,9,10],"d":3,"o":0},{"id":"o_bed1","t":"Bed verschonen","r":"Slaapkamer 1","c":"o","m":10,"f":2,"d":5,"o":0},{"id":"o_bed23","t":"Bed verschonen (slaapkamer 3 alleen als er iemand sliep)","r":"Slaapkamer 2","c":"o","m":10,"f":2,"d":5,"o":1},{"id":"s_badkamer","t":"Toilet, wastafel, inloopdouche, spiegel en vloer","r":"Badkamer","c":"s","m":15,"f":1,"imp":true,"tip":"Tip: na elke douche de wanden even aftrekken, dan blijft dit een kwartiertje.","d":0,"o":0},{"id":"s_toilet","t":"Toilet, fonteintje en vloertje","r":"Toilet","c":"s","m":5,"f":1,"imp":true,"d":4,"o":0},{"id":"s_zuig_boven","t":"Stofzuigen: slaapkamers, overloop en trap","r":"Overloop & trap","c":"s","m":15,"f":1,"tip":"De robot doet beneden; boven en de trap doe jij.","d":5,"o":0},{"id":"s_zuig_beneden","t":"Bank, krabpaal en hoeken stofzuigen; robot ontharen en bak legen","r":"Woonkamer","c":"s","m":10,"f":1,"tip":"Kattenhaar rond de borstels van de robot afknippen houdt hem effectief.","d":6,"o":0},{"id":"s_dweil_tegels","t":"Tegelvloer dweilen: keuken, hal, bijkeuken en toilet","r":"Woonkeuken","c":"s","m":15,"f":1,"d":3,"o":0},{"id":"s_keuken","t":"Keukenfronten, gootsteen, kraan en magnetron","r":"Woonkeuken","c":"s","m":10,"f":2,"d":6,"o":1},{"id":"s_stof_beneden","t":"Stof afnemen: vensterbanken, kasten, tv en bureau","r":"Woonkamer","c":"s","m":10,"f":2,"tip":"Inclusief kantoor. Van hoog naar laag werken.","d":6,"o":0},{"id":"s_stof_boven","t":"Stof afnemen: vensterbanken, kasten en nachtkastjes","r":"Overloop & trap","c":"s","m":10,"f":4,"d":2,"o":3},{"id":"s_kattenbak","t":"Kattenbakken helemaal verversen en uitwassen","r":"Katten","c":"s","m":15,"f":2,"imp":true,"d":1,"o":1},{"id":"s_dweil_hout","t":"Houten vloer vochtig dweilen met vloerzeep","r":"Woonkamer","c":"s","m":15,"f":4,"tip":"Whitewash-eiken: weinig water, goed uitgewrongen mop en houtzeep.","d":2,"o":1},{"id":"s_koelkast","t":"Koelkast uitsoppen: planken en laden","r":"Woonkeuken","c":"s","m":10,"f":4,"d":4,"o":2},{"id":"s_filters","t":"Vetfilters afzuigkap en filter vaatwasser schoonmaken","r":"Woonkeuken","c":"s","m":5,"f":4,"tip":"De vetfilters kunnen gewoon in de vaatwasser.","d":2,"o":0},{"id":"s_bad_extra","t":"Douchekop en kranen ontkalken, afvoeren en kitranden","r":"Badkamer","c":"s","m":15,"f":8,"d":4,"o":5},{"id":"s_bijkeuken","t":"Wasmachine (rubber, zeepbakje), droger-filter grondig, aanrecht en vloer","r":"Bijkeuken","c":"s","m":10,"f":4,"d":2,"o":3},{"id":"s_oven","t":"Oven schoonmaken","r":"Woonkeuken","c":"s","m":20,"f":8,"tip":"Eerst inweken met ovenreiniger of warm sop. Vaker als hij flink vuil is.","d":1,"o":6},{"id":"s_whirlpool","t":"Whirlpool-leidingen reinigen en bad schoonmaken","r":"Badkamer","c":"s","m":15,"f":12,"tip":"Vullen tot boven de spuitmonden, whirlpoolreiniger erbij, 10–15 min laten draaien, leeg en naspoelen. Gebruik je het bad bijna nooit, sla dan over.","d":4,"o":0},{"id":"s_deuren","t":"Deurklinken, lichtknoppen, trapleuning en glas in de binnendeuren","r":"Hele huis","c":"s","m":10,"f":8,"d":2,"o":2},{"id":"s_gashaard","t":"Glas van de gashaard schoonmaken","r":"Woonkamer","c":"s","m":10,"f":8,"mo":[10,11,12,1,2,3,4],"tip":"Alleen als de haard koud is, met haardglasreiniger.","d":2,"o":2},{"id":"s_spinnen","t":"Spinnenwebben: hoeken, plafonds en kozijnen","r":"Hele huis","c":"s","m":10,"f":12,"d":1,"o":0},{"id":"s_prullen","t":"Prullenbakken uitwassen","r":"Hele huis","c":"s","m":10,"f":12,"d":4,"o":8},{"id":"s_garage","t":"Garage vegen","r":"Garage","c":"s","m":10,"f":12,"d":2,"o":0},{"id":"s_waterkoker","t":"Waterkoker en koffiezetapparaat ontkalken","r":"Woonkeuken","c":"s","m":5,"f":12,"d":1,"o":8},{"id":"s_ramen_woon","t":"Ramen binnen","r":"Woonkamer","c":"s","m":15,"f":12,"d":2,"o":8},{"id":"s_ramen_keuken","t":"Ramen en tuindeuren binnen","r":"Woonkeuken","c":"s","m":15,"f":12,"d":1,"o":4},{"id":"s_ramen_beneden","t":"Ramen binnen: hal, toilet, bijkeuken en kantoor","r":"Hal & bijkeuken","c":"s","m":15,"f":24,"d":4,"o":17},{"id":"s_ramen_boven","t":"Ramen en dakramen binnen","r":"Overloop & trap","c":"s","m":15,"f":24,"d":4,"o":9},{"id":"s_plinten","t":"Plinten en deurposten","r":"Hele huis","c":"s","m":15,"f":12,"d":4,"o":7},{"id":"s_lampen","t":"Lampen afstoffen, ook de hanglampen boven de eettafel","r":"Hele huis","c":"s","m":10,"f":12,"d":2,"o":4},{"id":"s_radiator","t":"Radiatoren, radiatorombouw en ventilatieroosters stofzuigen","r":"Hele huis","c":"s","m":10,"f":12,"d":1,"o":8},{"id":"s_sauna","t":"Sauna: banken afnemen en vloer","r":"Badkamer","c":"s","m":10,"f":12,"tip":"Alleen als je hem gebruikt.","d":4,"o":3},{"id":"s_matras1","t":"Matras stofzuigen en keren","r":"Slaapkamer 1","c":"s","m":10,"f":24,"d":1,"o":18},{"id":"s_matras2","t":"Matras stofzuigen en keren","r":"Slaapkamer 2","c":"s","m":10,"f":24,"d":1,"o":2},{"id":"s_matras3","t":"Matras stofzuigen en keren","r":"Slaapkamer 3","c":"s","m":10,"f":24,"d":2,"o":6},{"id":"s_vriezer","t":"Vriezer nalopen en zo nodig ontdooien","r":"Woonkeuken","c":"s","m":15,"f":24,"d":4,"o":16},{"id":"s_gordijnen","t":"Vouwgordijnen, jaloezieën en horren afstoffen","r":"Hele huis","c":"s","m":15,"f":24,"d":2,"o":22},{"id":"s_kastjes1","t":"Keukenkastjes binnen uitsoppen (bovenkastjes)","r":"Woonkeuken","c":"s","m":15,"f":24,"d":1,"o":10},{"id":"s_kastjes2","t":"Keukenkastjes binnen uitsoppen (onderkastjes)","r":"Woonkeuken","c":"s","m":15,"f":24,"d":4,"o":11},{"id":"s_rookmelders","t":"Rookmelders testen en afstoffen","r":"Hele huis","c":"s","m":5,"f":24,"d":2,"o":14},{"id":"b_wieden","t":"Borders wieden","r":"Tuin","c":"b","m":20,"f":2,"mo":[4,5,6,7,8,9],"d":2,"o":0},{"id":"b_terras","t":"Onkruid uit de voegen, terras en veranda vegen","r":"Tuin","c":"b","m":20,"f":4,"mo":[4,5,6,7,8,9],"d":2,"o":1},{"id":"b_randen","t":"Gazonranden knippen","r":"Tuin","c":"b","m":15,"f":4,"mo":[5,6,7,8,9],"d":2,"o":3},{"id":"b_blad","t":"Blad harken: gazon, borders en terras","r":"Tuin","c":"b","m":20,"f":1,"mo":[10,11,12],"tip":"Blad in de borders mag blijven liggen, dat is goed voor de grond.","d":2,"o":0},{"id":"b_vegen_winter","t":"Terras, veranda en paden vegen","r":"Tuin","c":"b","m":10,"f":2,"mo":[1,2,3],"d":2,"o":0},{"id":"b_maaien","t":"Gras maaien","r":"Tuin","c":"b","m":20,"f":1,"mo":[4,5,6,7,8,9,10],"tip":"Eerste keer in het voorjaar hoog, daarna op 4–5 cm.","d":5,"o":0},{"id":"b_blad_oprit","t":"Blad ruimen: oprit, paden en voor de deur","r":"Tuin","c":"b","m":15,"f":1,"mo":[11,12],"d":5,"o":0},{"id":"b_ramen_straat","t":"Ramen buiten: straatkant","r":"Buitengevels","c":"b","m":20,"f":12,"mo":[3,4,5,6,7,8,9,10,11],"d":6,"o":0},{"id":"b_ramen_tuin","t":"Ramen buiten: tuinkant, incl. openslaande deuren","r":"Buitengevels","c":"b","m":20,"f":12,"mo":[3,4,5,6,7,8,9,10,11],"d":6,"o":3},{"id":"b_ramen_zij","t":"Ramen buiten: zijkanten en garage","r":"Buitengevels","c":"b","m":20,"f":12,"mo":[3,4,5,6,7,8,9,10,11],"d":6,"o":6},{"id":"b_ramen_boven","t":"Ramen buiten: boven, dakkapel en dakramen","r":"Buitengevels","c":"b","m":20,"f":12,"mo":[3,4,5,6,7,8,9,10,11],"tip":"Met telescoopsteel of ladder. Niet bij harde wind of vorst.","d":6,"o":9},{"id":"b_kas","t":"Kas schoonmaken en opruimen","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[9]},{"id":"b_snoeien","t":"Hortensia's en borders snoeien","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[11]},{"id":"b_meubels_uit","t":"Tuinmeubels en kussens tevoorschijn halen en afnemen","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[15]},{"id":"b_groen","t":"Groene aanslag van terras en paden halen","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[17]},{"id":"b_heg1","t":"Heg knippen (eerste ronde), stuk voor stuk","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[24,25,26]},{"id":"b_heg2","t":"Heg knippen (tweede ronde), stuk voor stuk","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[36,37,38]},{"id":"b_meubels_in","t":"Tuinmeubels schoonmaken en opbergen","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[41]},{"id":"b_gereedschap","t":"Maaier en tuingereedschap schoonmaken en opbergen","r":"Tuin","c":"b","m":20,"f":"y","d":6,"w":[44]},{"id":"b_goten","t":"Dakgoten leeghalen (huis en garage)","r":"Buitengevels","c":"b","m":20,"f":"y","d":6,"w":[48]}],"ontspul":["Keukenla's: bestek en keukengerei","Keukenkastjes: servies en glazen","Voorraadkast: alles over de datum weg","Kruiden, bakspullen en bakvormen","Bijkeuken: vaste kast","Hal: garderobe en schoenen","Kast naast het toilet","Kantoor: boekenkast","Kantoor: papieren en archief","Woonkamer: tv-meubel, kasten en spellen","Garagezolder (deel 1)","Snoeren, opladers en de 'rommella'","Slaapkamer 1: kledingkast, bovenkleding","Slaapkamer 1: kledingkast, broeken en schoenen","Slaapkamer 1: nachtkastjes en lades","Slaapkamer 2: kleding die te klein is of niet gedragen wordt","Slaapkamer 2: speelgoed en boeken","Slaapkamer 3: kastenwand","Linnengoed: beddengoed en handdoeken","Badkamer: kastjes, verlopen producten en medicijnen","Overloop en CV-ruimte","Bergruimte achter de knieschotten","Garage: werkbank en gereedschap","Garage: fietsen, sport en buitenspeelgoed","Garagezolder (deel 2)","Overkapping (opslag) en kas"],"was":[{"t":"Bont","s":"40°"},{"t":"Donker","s":"30°"},{"t":"Handdoeken en theedoeken","s":"60°"},{"t":"Bont","s":"40°"},{"t":"Wit en licht","s":"40–60°"},{"t":"Beddengoed","s":"60°"},{"t":"Handdoeken, badmatten en kattenplaids","s":"60°"}]};
+var BY = {}; DATA.tasks.forEach(function(t){ BY[t.id] = t; });
+
+/* ---------- datum ---------- */
+var ANCHOR = Date.UTC(2026, 9, 5);   // maandag 5 oktober 2026 = week 0
+var DAYMS = 864e5;
+var WD  = ['maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag'];
+var WDS = ['ma','di','wo','do','vr','za','zo'];
+var MN  = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+var MNS = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+var CAT = {o:'Opruimen', s:'Schoonmaken', b:'Buiten', w:'Was'};
+var CAP = {o:30, s:30};
+var ROOMS = ['Woonkeuken','Woonkamer','Hal & bijkeuken','Bijkeuken','Toilet','Kantoor','Overloop & trap',
+  'Slaapkamer 1','Slaapkamer 2','Slaapkamer 3','Badkamer','Katten','Hele huis','Garage','Tuin','Buitengevels','Ontspullen'];
+var FREQ = {1:'elke week', 2:'om de week', 4:'elke 4 weken', 8:'elke 8 weken', 12:'elke 12 weken', 24:'elk half jaar'};
+
+function mod(a,n){ return ((a % n) + n) % n; }
+function today(){ var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function addD(d,n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+function pad(n){ return (n < 10 ? '0' : '') + n; }
+function ymd(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function parse(s){ var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+function dIdx(d){ return Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - ANCHOR) / DAYMS); }
+function wday(d){ return mod(dIdx(d), 7); }
+function wIdx(d){ return Math.floor(dIdx(d) / 7); }
+function isoWeek(d){
+  var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+  var y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil(((t - y0) / DAYMS + 1) / 7);
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function cap1(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function shortDate(d){ return WDS[wday(d)] + ' ' + d.getDate() + ' ' + MNS[d.getMonth()]; }
+function relDate(d){
+  var diff = dIdx(d) - dIdx(today());
+  if (diff === 0) return 'vandaag';
+  if (diff === 1) return 'morgen';
+  if (diff === -1) return 'gisteren';
+  return shortDate(d);
+}
+
+/* ---------- schema ---------- */
+function occurs(t, d){
+  if (t.mo && t.mo.indexOf(d.getMonth() + 1) < 0) return false;
+  if (t.f === 0) return true;
+  if (wday(d) !== t.d) return false;
+  if (t.f === 'y') return t.w.indexOf(isoWeek(d)) >= 0;
+  return mod(wIdx(d) - t.o, t.f) === 0;
+}
+function titleFor(t, d){
+  if (t.id === 'o_ontspul') return 'Ontspullen: ' + DATA.ontspul[mod(wIdx(d), DATA.ontspul.length)];
+  return t.t;
+}
+function wasFor(d){
+  var w = DATA.was[wday(d)], t = w.t;
+  if (wday(d) === 5) t += mod(wIdx(d), 2) === 0 ? ' · slaapkamer 1' : ' · slaapkamer 2 en 3';
+  return {t: t, s: w.s};
+}
+function monthRange(mo){
+  var set = {}; mo.forEach(function(m){ set[m] = 1; });
+  var start = null;
+  mo.forEach(function(m){ if (start === null && !set[m === 1 ? 12 : m - 1]) start = m; });
+  if (start === null) return 'hele jaar';
+  var end = start;
+  while (set[end === 12 ? 1 : end + 1]) end = end === 12 ? 1 : end + 1;
+  return start === end ? MNS[start - 1] : MNS[start - 1] + '–' + MNS[end - 1];
+}
+function freqLabel(t){
+  var s;
+  if (t.f === 0) s = 'elke dag';
+  else if (t.f === 'y') s = 'jaarlijks · ' + (t.w.length > 1 ? 'zondag in week ' + t.w[0] + '–' + t.w[t.w.length - 1] : 'zondag in week ' + t.w[0]);
+  else s = FREQ[t.f] + ' · ' + WDS[t.d];
+  if (t.mo) s += ' · ' + monthRange(t.mo);
+  return s;
+}
+function nextDate(test, from){
+  for (var i = 0; i < 400; i++){ var d = addD(from, i); if (test(d)) return d; }
+  return null;
+}
+
+/* ---------- opslag ---------- */
+var KEY = 'huishouden-v1';
+function loadS(){
+  try { var j = JSON.parse(localStorage.getItem(KEY) || 'null'); if (j && j.days) return j; } catch (e) {}
+  return null;
+}
+var S = loadS() || {first: ymd(today()), days: {}, moves: {}};
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+(function prune(){
+  var cut = ymd(addD(today(), -120));
+  Object.keys(S.days).forEach(function(k){ if (k < cut) delete S.days[k]; });
+  Object.keys(S.moves).forEach(function(k){ if (k < cut) delete S.moves[k]; });
+  save();
+})();
+function st(ds, k){ return (S.days[ds] || {})[k] || null; }
+function setSt(ds, k, v){
+  S.days[ds] = S.days[ds] || {};
+  if (v) S.days[ds][k] = v; else delete S.days[ds][k];
+  if (!Object.keys(S.days[ds]).length) delete S.days[ds];
+  save();
+}
+
+/* ---------- taken van een dag ---------- */
+function instances(d){
+  var ds = ymd(d), out = [];
+  DATA.tasks.forEach(function(t){ if (occurs(t, d)) out.push({t: t, key: t.id, ds: ds}); });
+  (S.moves[ds] || []).forEach(function(mv){
+    var t = BY[mv.id]; if (t) out.push({t: t, key: t.id + '~' + mv.from, ds: ds, src: 'moved', from: mv.from});
+  });
+  if (ds <= ymd(today())){                 // belangrijke taken van gisteren schuiven één dag door
+    var y = addD(d, -1), ys = ymd(y);
+    if (ys >= S.first) DATA.tasks.forEach(function(t){
+      if (t.imp && occurs(t, y) && !st(ys, t.id)) out.push({t: t, key: t.id + '~' + ys, ds: ds, src: 'carry', from: ys});
+    });
+  }
+  out.forEach(function(i){ i.status = st(ds, i.key); i.title = titleFor(i.t, i.from ? parse(i.from) : d); i.c = i.t.c; i.m = i.t.m; });
+  out.sort(function(a, b){
+    return (a.src ? 0 : 1) - (b.src ? 0 : 1) || (a.t.f === 0 ? 0 : 1) - (b.t.f === 0 ? 0 : 1);
+  });
+  return out;
+}
+function wasSteps(d){
+  var ds = ymd(d), w = wasFor(d);
+  return [
+    {key: 'w_aan', ds: ds, c: 'w', m: 0, title: 'Machine aanzetten', t: {f: 0, id: 'w_aan', tip: 'Was van vandaag: ' + w.t + ' (' + w.s + ').'}},
+    {key: 'w_droger', ds: ds, c: 'w', m: 0, title: 'In de droger, pluizenfilter en condensbak legen', t: {f: 0, id: 'w_droger', tip: 'Vouwen en opbergen staat bij opruimen.'}}
+  ].map(function(i){ i.status = st(ds, i.key); return i; });
+}
+function active(i){ return i.status !== 'skip' && i.status !== 'moved'; }
+
+/* ---------- toestand ---------- */
+var tab = 'dag', sel = today(), openKey = null, cur = {}, lastToday = ymd(today());
+var view = document.getElementById('view');
+
+function render(){
+  document.querySelectorAll('#tabs button').forEach(function(b){ b.classList.toggle('on', b.dataset.tab === tab); });
+  if (tab === 'dag') renderDay(); else if (tab === 'week') renderWeek(); else renderSchema();
+}
+
+var ICON_L = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
+var ICON_R = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+var CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function header(kicker, title, sub, navs){
+  return '<header class="top">' +
+    (navs ? '<button class="nav" data-act="prev" aria-label="Vorige">' + ICON_L + '</button>' : '') +
+    '<div class="head"><div class="kicker">' + esc(kicker) + '</div><h1>' + esc(title) + '</h1>' +
+    (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + '</div>' +
+    (navs ? '<button class="nav" data-act="next" aria-label="Volgende">' + ICON_R + '</button>' : '') +
+    '</header>';
+}
+
+function taskRow(i){
+  var cls = 'task' + (i.status ? ' ' + i.status : '') + (openKey === i.key ? ' open' : '');
+  var meta = [];
+  if (i.t.r) meta.push('<span>' + esc(i.t.r) + '</span>');
+  if (i.src === 'carry') meta.push('<span class="badge">Van gisteren</span>');
+  if (i.src === 'moved') meta.push('<span class="badge">Verplaatst van ' + esc(WDS[wday(parse(i.from))]) + '</span>');
+  if (i.status === 'skip') meta.push('<span class="badge">Overgeslagen</span>');
+  if (i.status === 'moved') meta.push('<span class="badge">Naar morgen</span>');
+  var more = '';
+  if (i.t.tip) more += '<p class="tip">' + esc(i.t.tip) + '</p>';
+  if (i.t.r){
+    var facts = cap1(freqLabel(i.t));
+    if (i.t.imp) facts += ' · schuift een dag door als je hem mist';
+    var nx = nextDate(function(d){ return occurs(i.t, d); }, addD(parse(i.ds), 1));
+    if (nx && i.t.f !== 0) facts += ' · daarna ' + relDate(nx);
+    more += '<p class="facts">' + esc(facts) + '</p>';
+  }
+  var acts = [];
+  if (i.status === 'skip' || i.status === 'moved') acts.push('<button data-act="undo" data-key="' + esc(i.key) + '">Terugzetten</button>');
+  else {
+    if (i.t.f !== 0 && i.c !== 'w') acts.push('<button data-act="move" data-key="' + esc(i.key) + '">Naar morgen</button>');
+    acts.push('<button data-act="skip" data-key="' + esc(i.key) + '">Overslaan</button>');
+  }
+  more += '<div class="acts">' + acts.join('') + '</div>';
+  return '<li class="' + cls + '">' +
+    '<button class="check" data-act="check" data-key="' + esc(i.key) + '" aria-label="Afvinken"><span class="c">' + CHECK + '</span></button>' +
+    '<div class="body" data-act="open" data-key="' + esc(i.key) + '"><div class="title">' + esc(i.title) + '</div>' +
+    (meta.length ? '<div class="meta">' + meta.join('<span>·</span>').replace(/<span>·<\/span>(<span class="badge)/g, '$1') + '</div>' : '') + '</div>' +
+    '<div class="min">' + (i.m ? i.m + '′' : '') + '</div>' +
+    '<div class="more">' + more + '</div></li>';
+}
+
+function mins(list){ return list.filter(active).reduce(function(a, i){ return a + i.m; }, 0); }
+function doneMins(list){ return list.filter(function(i){ return i.status === 'done'; }).reduce(function(a, i){ return a + i.m; }, 0); }
+
+function renderDay(){
+  var d = sel, ds = ymd(d), diff = dIdx(d) - dIdx(today());
+  var inst = instances(d), steps = wasSteps(d), w = wasFor(d);
+  cur = {}; inst.concat(steps).forEach(function(i){ cur[i.key] = i; });
+  var by = {o: [], s: [], b: []}; inst.forEach(function(i){ by[i.c].push(i); });
+  var all = inst.concat(steps).filter(active), done = all.filter(function(i){ return i.status === 'done'; }).length;
+  var kicker = diff === 0 ? 'Vandaag' : diff === 1 ? 'Morgen' : diff === -1 ? 'Gisteren' : '';
+  var h = header(kicker, cap1(WD[wday(d)]), d.getDate() + ' ' + MN[d.getMonth()] + ' · week ' + isoWeek(d), true);
+  if (diff !== 0) h += '<button class="todaybtn" data-act="today">Naar vandaag</button>';
+
+  var meters = ['o', 's'].map(function(c){
+    var p = mins(by[c]);
+    return '<div class="meter ' + c + (p > CAP[c] ? ' over' : '') + '"><span class="lbl">' + CAT[c] + '</span><span class="val">' +
+      doneMins(by[c]) + '<em> / ' + p + ' min</em></span></div>';
+  });
+  if (by.b.length) meters.push('<div class="meter b"><span class="lbl">Buiten</span><span class="val">' + doneMins(by.b) + '<em> / ' + mins(by.b) + ' min</em></span></div>');
+  h += '<section class="summary"><div class="prog"><div class="bar"><i style="width:' + (all.length ? Math.round(done / all.length * 100) : 0) + '%"></i></div>' +
+    '<span>' + done + ' van ' + all.length + ' klaar</span></div><div class="meters">' + meters.join('') + '</div></section>';
+
+  h += '<section class="card cat-w"><h2><span class="dot"></span>Was</h2><div class="washero"><b>' + esc(w.t) + '</b><span>' + esc(w.s) + '</span></div>' +
+    '<ul class="tasks">' + steps.map(taskRow).join('') + '</ul></section>';
+  ['o', 's', 'b'].forEach(function(c){
+    if (!by[c].length) return;
+    var p = mins(by[c]), over = CAP[c] && p > CAP[c];
+    h += '<section class="card cat-' + c + '"><h2><span class="dot"></span>' + CAT[c] +
+      '<span class="mins' + (over ? ' over' : '') + '">' + p + ' min</span></h2><ul class="tasks">' + by[c].map(taskRow).join('') + '</ul>' +
+      (over ? '<div class="hint">Iets meer dan 30 min door een taak die is doorgeschoven.</div>' : '') +
+      (c === 'b' ? '<div class="hint">Buiten komt bovenop je 30 + 30 minuten.</div>' : '') + '</section>';
+  });
+  view.innerHTML = h;
+}
+
+function renderWeek(){
+  var mon = addD(sel, -wday(sel)), sun = addD(mon, 6), td = ymd(today());
+  var sub = mon.getDate() + (mon.getMonth() !== sun.getMonth() ? ' ' + MNS[mon.getMonth()] : '') + ' – ' + sun.getDate() + ' ' + MN[sun.getMonth()];
+  var h = header(dIdx(mon) <= dIdx(today()) && dIdx(today()) <= dIdx(sun) ? 'Deze week' : '', 'Week ' + isoWeek(mon), sub, true);
+  if (!(dIdx(mon) <= dIdx(today()) && dIdx(today()) <= dIdx(sun))) h += '<button class="todaybtn" data-act="today">Naar deze week</button>';
+  for (var k = 0; k < 7; k++){
+    var d = addD(mon, k), ds = ymd(d), inst = instances(d), steps = wasSteps(d), w = wasFor(d);
+    var all = inst.concat(steps).filter(active), done = all.filter(function(i){ return i.status === 'done'; }).length;
+    var by = {o: [], s: [], b: []}; inst.forEach(function(i){ by[i.c].push(i); });
+    var chips = '<span class="chip w">' + esc(w.t.split(' · ')[0]) + ' ' + esc(w.s) + '</span>' +
+      '<span class="chip">Opruimen ' + mins(by.o) + '′</span><span class="chip s">Schoonmaken ' + mins(by.s) + '′</span>' +
+      (by.b.length ? '<span class="chip b">Buiten ' + mins(by.b) + '′</span>' : '');
+    var items = inst.filter(function(i){ return i.t.f !== 0; }).map(function(i){
+      return '<li class="' + i.c + (i.status ? ' x' : '') + '"><i></i>' + esc(i.title) + '</li>';
+    }).join('');
+    h += '<button class="day' + (ds === td ? ' today' : '') + '" data-act="goto" data-ds="' + ds + '"><div class="row"><span class="dn">' + cap1(WD[k]) +
+      '</span><span class="dd">' + d.getDate() + ' ' + MNS[d.getMonth()] + '</span>' +
+      (ds <= td ? '<span class="ratio">' + done + '/' + all.length + '</span>' : '') + '</div>' +
+      '<div class="chips">' + chips + '</div><ul class="dl">' + items + '</ul></button>';
+  }
+  view.innerHTML = h;
+}
+
+function renderSchema(){
+  var t0 = today();
+  var h = header('', 'Schema', 'Wat, waar en hoe vaak', false);
+  h += '<section class="card"><h2><span class="dot"></span>Zo werkt het</h2><div class="intro">' +
+    '<p>Elke dag één was, maximaal 30 minuten opruimen en maximaal 30 minuten schoonmaken. Het schema draait vanzelf door.</p>' +
+    '<p>Mis je een dag, dan schuiven alleen badkamer, toilet en kattenbakken één dag op. Al het andere komt gewoon de volgende keer weer langs.</p>' +
+    '<p>Tik op een taak voor uitleg, <b>Naar morgen</b> of <b>Overslaan</b>. Afvinken wordt alleen op dit toestel bewaard.</p></div>' +
+    '<button class="wipe" data-act="wipe">Alle afvinkingen wissen</button></section>';
+
+  function row(t, title, next){
+    return '<div class="srow ' + t.c + '"><i></i><span class="t">' + esc(title || t.t) + '</span><span class="m">' + t.m + '′</span>' +
+      '<span class="f">' + esc(cap1(freqLabel(t))) + (next ? ' · volgende ' + esc(relDate(next)) : '') + '</span></div>';
+  }
+  var daily = DATA.tasks.filter(function(t){ return t.f === 0; });
+  h += '<section class="card"><h2><span class="dot"></span>Elke dag<span class="mins">' +
+    daily.reduce(function(a, t){ return a + t.m; }, 0) + ' min</span></h2>' + daily.map(function(t){ return row(t); }).join('') + '</section>';
+
+  h += '<section class="card cat-w"><h2><span class="dot"></span>Was per dag</h2>' + DATA.was.map(function(w, k){
+    var extra = k === 5 ? ' (om de week slaapkamer 1, of slaapkamer 2 en 3)' : '';
+    return '<div class="srow w"><i></i><span class="t">' + cap1(WD[k]) + ': ' + esc(w.t) + extra + '</span><span class="m">' + esc(w.s) + '</span></div>';
+  }).join('') + '</section>';
+
+  ROOMS.forEach(function(room){
+    var list = DATA.tasks.filter(function(t){ return t.r === room && t.f !== 0 && t.id !== 'o_ontspul'; });
+    if (!list.length) return;
+    var order = {o: 0, s: 1, b: 2};
+    list.sort(function(a, b){
+      var fa = a.f === 'y' ? 99 : a.f, fb = b.f === 'y' ? 99 : b.f;
+      return order[a.c] - order[b.c] || fa - fb;
+    });
+    h += '<section class="card"><h2><span class="dot"></span>' + esc(room) + '</h2>' + list.map(function(t){
+      return row(t, null, nextDate(function(d){ return occurs(t, d); }, t0));
+    }).join('') + '</section>';
+  });
+
+  var ot = BY.o_ontspul;
+  h += '<section class="card"><h2><span class="dot"></span>Ontspullen<span class="mins">elke ' + WDS[ot.d] + ' · ' + ot.m + ' min</span></h2>' +
+    '<div class="intro"><p>Elke week één la of kast. Na ' + DATA.ontspul.length + ' weken begint de rij opnieuw, dus alles komt twee keer per jaar aan de beurt.</p></div>' +
+    DATA.ontspul.map(function(z, idx){
+      var nx = nextDate(function(d){ return occurs(ot, d) && mod(wIdx(d), DATA.ontspul.length) === idx; }, t0);
+      return {z: z, nx: nx};
+    }).sort(function(a, b){ return a.nx - b.nx; }).map(function(x){
+      return '<div class="srow o"><i></i><span class="t">' + esc(x.z) + '</span><span class="m">' + (x.nx ? esc(relDate(x.nx)) : '') + '</span></div>';
+    }).join('') + '</section>';
+  view.innerHTML = h;
+}
+
+/* ---------- acties ---------- */
+function moveTomorrow(i){
+  var nd = ymd(addD(parse(i.ds), 1)), from = i.from || i.ds;
+  setSt(i.ds, i.key, 'moved');
+  S.moves[nd] = S.moves[nd] || [];
+  if (!S.moves[nd].some(function(m){ return m.id === i.t.id && m.from === from; })) S.moves[nd].push({id: i.t.id, from: from});
+  save();
+}
+function undo(i){
+  if (i.status === 'moved'){
+    var nd = ymd(addD(parse(i.ds), 1)), from = i.from || i.ds;
+    S.moves[nd] = (S.moves[nd] || []).filter(function(m){ return !(m.id === i.t.id && m.from === from); });
+    if (!S.moves[nd].length) delete S.moves[nd];
+    setSt(nd, i.t.id + '~' + from, null);
+  }
+  setSt(i.ds, i.key, null);
+}
+
+view.addEventListener('click', function(e){
+  var b = e.target.closest('[data-act]'); if (!b) return;
+  var act = b.dataset.act, i = b.dataset.key ? cur[b.dataset.key] : null;
+  if (act === 'prev'){ sel = addD(sel, tab === 'week' ? -7 : -1); openKey = null; }
+  else if (act === 'next'){ sel = addD(sel, tab === 'week' ? 7 : 1); openKey = null; }
+  else if (act === 'today'){ sel = today(); openKey = null; }
+  else if (act === 'goto'){ sel = parse(b.dataset.ds); tab = 'dag'; openKey = null; window.scrollTo(0, 0); }
+  else if (act === 'open'){ openKey = openKey === b.dataset.key ? null : b.dataset.key; }
+  else if (act === 'check' && i){
+    setSt(i.ds, i.key, i.status === 'done' ? null : (i.status === 'moved' ? (undo(i), 'done') : 'done'));
+    if (navigator.vibrate) try { navigator.vibrate(8); } catch (x) {}
+  }
+  else if (act === 'skip' && i){ setSt(i.ds, i.key, 'skip'); openKey = null; }
+  else if (act === 'move' && i){ moveTomorrow(i); openKey = null; }
+  else if (act === 'undo' && i){ undo(i); openKey = null; }
+  else if (act === 'wipe'){
+    if (!confirm('Alle afvinkingen en verplaatsingen wissen?')) return;
+    S = {first: ymd(today()), days: {}, moves: {}}; save();
+  }
+  else return;
+  render();
+  if (act === 'prev' || act === 'next' || act === 'today') view.classList.remove('fade'), void view.offsetWidth, view.classList.add('fade');
+});
+
+document.getElementById('tabs').addEventListener('click', function(e){
+  var b = e.target.closest('[data-tab]'); if (!b) return;
+  if (tab === b.dataset.tab && tab === 'dag') sel = today();
+  tab = b.dataset.tab; openKey = null; render(); window.scrollTo(0, 0);
+});
+
+/* vegen tussen dagen */
+var tx = null, ty = null;
+view.addEventListener('touchstart', function(e){ if (tab === 'schema') return; tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive: true});
+view.addEventListener('touchend', function(e){
+  if (tx === null) return;
+  var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; tx = null;
+  if (Math.abs(dx) > 70 && Math.abs(dy) < 45){
+    sel = addD(sel, (dx < 0 ? 1 : -1) * (tab === 'week' ? 7 : 1)); openKey = null; render();
+    view.classList.remove('fade'); void view.offsetWidth; view.classList.add('fade');
+  }
+}, {passive: true});
+
+/* nieuwe dag na middernacht of bij terugkomen */
+function tick(){
+  var t = ymd(today());
+  if (t !== lastToday){ if (ymd(sel) === lastToday) sel = today(); lastToday = t; render(); }
+}
+document.addEventListener('visibilitychange', function(){ if (!document.hidden) tick(); });
+setInterval(tick, 60000);
+
+render();
+
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+})();
+</script>
+</body>
+</html>
